@@ -7,16 +7,18 @@ import subprocess
 import numpy as np
 import random
 import pandas as pd
+
+from dataclasses import asdict
 from tqdm import tqdm
 from functools import lru_cache
 from scipy.io import loadmat
 import torch
 
-ROOT = 'datasets/rgbd-scenes'
+ROOT = '/media/hdd/github/sim2realVL/sim2realVL/datasets/rgbd-scenes'
 BOXES_TSV = 'rgbd-scenes_boxes.tsv'
 FEATURES_BINARY = 'checkpoints/resnet18_features_tuned1.p'
 CATALOGUE_TSV ='datasets/rgbd-scenes/rgbd-scenes_catalogue.csv'
-VG_TSV = 'rgbd-scenes_vg_v2.tsv' 
+VG_TSV = 'rgbd-scenes_vg_v2.tsv'
 
 
 # split image folders to rgb/ and depth/ sub-directiories for convinience
@@ -146,6 +148,13 @@ class RGBDScenesDataset(FromTableDataset):
             img = cv2.putText(img, obj.label, (obj.box.x, obj.box.y), fontFace=0, fontScale=1, color=(0,0,0xff))
             img = cv2.rectangle(img, (obj.box.x, obj.box.y), (obj.box.x+obj.box.w, obj.box.y+obj.box.h), (0,0,0xff), 2)
         show(img)
+    
+    def gen_images(self, n: int, save_path):
+        scene = self.__getitem__(n)
+        img = self.get_image(n).copy()
+        for obj in scene.objects:
+            x,y,w,h = asdict(obj)["box"].values()
+            cv2.imwrite(str(save_path/f"{str(n)}_{obj.label}.png"), img[y:y+h, x:x+w])
 
     def inspect(self):
         for n in range(self.__len__()):

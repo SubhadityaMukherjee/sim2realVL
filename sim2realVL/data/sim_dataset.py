@@ -5,6 +5,7 @@ import pandas as pd
 import os
 import cv2
 from functools import lru_cache
+from dataclasses import asdict
 
 CATEGORY_MAP = {
     'mug'       :   'coffee mug',
@@ -91,10 +92,18 @@ class SimScenesDataset:
         scene = self.__getitem__(n)
         img = self.get_image(n).copy()
         for obj in scene.objects:
-            x, y, w, h = obj.bounding_box
+            # x, y, w, h = obj.bounding_box
+            x,y,w,h = asdict(obj)["bounding_box"].values()
             img = cv2.putText(img, obj.label, (x, y), fontFace=0, fontScale=1, color=(0,0,0xff))
             img = cv2.rectangle(img, (x, y), (x+w, y+h), (0,0,0xff), 2)
         show(img, str(self.image_ids[n]))
+    
+    def gen_images(self, n: int, save_path):
+        scene = self.__getitem__(n)
+        img = self.get_image(n).copy()
+        for obj in scene.objects:
+            x,y,w,h = asdict(obj)["bounding_box"].values()
+            cv2.imwrite(str(save_path/f"{str(n)}_{obj.label}.png"), img[y:y+h, x:x+w])
 
     def show_id(self, id: int):
         self.show(self.image_ids.index(id))
