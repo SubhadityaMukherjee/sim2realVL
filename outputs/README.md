@@ -1,0 +1,2 @@
+- For Cycle GAN each pair consists of 
+- real image, fake image , reconstructed image (given real concert to fake? 
